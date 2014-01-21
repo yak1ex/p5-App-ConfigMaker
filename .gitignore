@@ -1,0 +1,4 @@
+.build/
+App-ConfigMaker-*.tar.gz
+App-ConfigMaker-*/
+*.BAK
