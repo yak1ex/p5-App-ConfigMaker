@@ -1,0 +1,54 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+
+# PODNAME: configmaker
+# ABSTRACT: A tiny helper for configuration files on different environments
+# VERSION
+
+use App::ConfigMaker;
+
+App::ConfigMaker->run(@ARGV);
+
+__END__
+
+=head1 SYNOPSIS
+
+configmaker C<-h>
+
+configmaker [install | make | check | init]
+
+  # show brief instruction
+  configmaker -h
+
+  # make configuration files for local environment
+  configmaker make
+
+  # install configuration files made on local
+  configmaker install
+
+  # check $ENV{HOME}/.config.yaml and $ENV{HOME}/{template_dir}/control.yaml with template files
+  configmaker check
+
+  # make initial $ENV{HOME}/.config.yaml from $ENV{HOME}/{template_dir}/control.yaml
+  configmaker init
+
+=head1 DESCRIPTION
+
+It is NOT intended that this tiny script is released to CPAN. Just for a personal use.
+
+Make configuration files from template files and a variable definition file.
+Therefore, environment-dependent parts and others are split as variables and template files.
+Templates are handled by L<Text::Template>.
+
+=for :list
+= $ENV{HOME}/.config.yaml : values for variables
+= $ENV{HOME}/{template_dir}/control.yaml : template control file
+= $ENV{HOME}/{template_dir}/*.tmpl: templates
+
+=option C<-h>
+
+Show brief instruction.
+
+=for getopt 'h'
