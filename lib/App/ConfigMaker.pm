@@ -14,6 +14,29 @@ use YAML::Any;
 my $yaml = YAML::Any->implementation;
 my $encoder = $yaml eq 'YAML::Syck' || $yaml eq 'YAML::Old' ? sub { shift; } : sub { Encode::encode('utf-8', shift); };
 
+my %dispatch = (
+	make => \&_make,
+	install => \&_install,
+	init => \&_init,
+	check => \&_check,
+);
+
+sub _make
+{
+}
+
+sub _install
+{
+}
+
+sub _init
+{
+}
+
+sub _check
+{
+}
+
 sub run
 {
 	shift if @_ && eval { $_[0]->isa(__PACKAGE__) };
@@ -24,6 +47,10 @@ sub run
 	getopts(Getopt::Config::FromPod->string, \%opts);
 	pod2usage(-verbose => 2) if exists $opts{h};
 	pod2usage(-msg => 'At least one argument MUST be specified', -verbose => 0, -exitval => 1) if ! @ARGV;
+
+	my $command = shift @ARGV;
+	pod2usage(-msg => "Unkown command: $command", -verbose => 1, -exitval => 1) unless exists $dispatch{$command};
+	$dispatch{$command}->(@ARGV);
 }
 
 1;
