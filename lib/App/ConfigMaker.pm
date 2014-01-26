@@ -21,6 +21,10 @@ my %dispatch = (
 	check => \&_check,
 );
 
+my %opts;
+my $conf;
+my $CONF_PATH = "$ENV{HOME}/.config.yaml";
+
 sub _make
 {
 }
@@ -31,6 +35,23 @@ sub _install
 
 sub _init
 {
+	$conf = {};
+	if(-f "$ENV{HOME}/.config.yaml") {
+		if(! exists $opts{u}) {
+			die "$CONF_PATH has already existed, specify -u if you actually want to update it";
+		}
+		$conf = YAML::Any::LoadFile($CONF_PATH);
+	}
+	$conf->{template_path} ||= "$ENV{HOME}/.conf";
+	my $control_path = $conf->{template_path}.'/control.yaml';
+	if(! -f $control_path) {
+		die "$control_path not found";
+	}
+	my $control = YAML::Any::LoadFile($control_path) or die "Can't load $control_path";
+	foreach my $key (keys %{$control->{variables}}) {
+		$conf->{$key} = $control->{variables}{$key}{example};
+	}
+	YAML::Any::DumpFile($CONF_PATH, $conf);
 }
 
 sub _check
@@ -43,13 +64,15 @@ sub run
 
 	local (@ARGV) = @_;
 
-	my %opts;
 	getopts(Getopt::Config::FromPod->string, \%opts);
 	pod2usage(-verbose => 2) if exists $opts{h};
 	pod2usage(-msg => 'At least one argument MUST be specified', -verbose => 0, -exitval => 1) if ! @ARGV;
 
 	my $command = shift @ARGV;
 	pod2usage(-msg => "Unkown command: $command", -verbose => 1, -exitval => 1) unless exists $dispatch{$command};
+	if($command ne 'init') {
+		$conf = YAML::Any::LoadFile($CONF_PATH) or die "$CONF_PATH not found}";
+	}
 	$dispatch{$command}->(@ARGV);
 }
 
