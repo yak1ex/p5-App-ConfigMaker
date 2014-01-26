@@ -1,5 +1,6 @@
 package App::ConfigMaker;
 
+use utf8;
 use strict;
 use warnings;
 
@@ -10,6 +11,7 @@ use Getopt::Std;
 use Getopt::Config::FromPod;
 use Pod::Usage;
 use YAML::Any;
+use Text::Template;
 
 my $yaml = YAML::Any->implementation;
 my $encoder = $yaml eq 'YAML::Syck' || $yaml eq 'YAML::Old' ? sub { shift; } : sub { Encode::encode('utf-8', shift); };
@@ -25,8 +27,53 @@ my %opts;
 my $conf;
 my $CONF_PATH = "$ENV{HOME}/.config.yaml";
 
+# hook for test
+sub __set_conf
+{
+	$CONF_PATH = shift;
+}
+
+sub _resolve_one
+{
+	my $key = shift;
+	my $flag;
+	while($conf->{$key} =~ /{([^}]*)}/g) {
+		$flag = 1;
+		_resolve_one($1);
+	}
+	if($flag) {
+		$conf->{$key} =~ s/{([^}]*)}/$conf->{$1}/ge;
+	}
+}
+
+sub _resolve_conf
+{
+	foreach my $key (keys %$conf) {
+		_resolve_one($key);
+	}
+}
+
+# TODO: add tests
+sub _expand
+{
+	my $value = shift;
+	$value =~ s/{([^}]*)}/$conf->{$1}/ge;
+	return $value;
+}
+
+# TODO: encoding/bom handling
 sub _make
 {
+	my $control_path = $conf->{template_path}.'/control.yaml';
+	if(! -f $control_path) {
+		die "$control_path not found";
+	}
+	my $control = YAML::Any::LoadFile($control_path) or die "Can't load $control_path";
+	foreach my $key (keys %{$control->{files}}) {
+		open my $fh, '>', "$conf->{template_path}/${key}.out";
+		print $fh Text::Template::fill_in_file("$conf->{template_path}/${key}.tmpl", HASH => $conf->{variables});
+		close $fh;
+	}
 }
 
 sub _install
@@ -72,6 +119,7 @@ sub run
 	pod2usage(-msg => "Unkown command: $command", -verbose => 1, -exitval => 1) unless exists $dispatch{$command};
 	if($command ne 'init') {
 		$conf = YAML::Any::LoadFile($CONF_PATH) or die "$CONF_PATH not found}";
+		_resolve_conf();
 	}
 	$dispatch{$command}->(@ARGV);
 }
