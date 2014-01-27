@@ -73,7 +73,7 @@ sub _make
 	my $control = YAML::Any::LoadFile($control_path) or die "Can't load $control_path";
 	foreach my $key (keys %{$control->{files}}) {
 		open my $fh, '>', "$conf->{template_path}/${key}.out";
-		print $fh Text::Template::fill_in_file("$conf->{template_path}/${key}.tmpl", DELIMITERS => ['{%', '%}'], HASH => $conf->{variables});
+		print $fh Text::Template::fill_in_file("$conf->{template_path}/${key}.tmpl", DELIMITERS => ['{%', '%}'], HASH => $conf);
 		close $fh;
 	}
 }
