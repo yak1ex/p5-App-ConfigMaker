@@ -12,6 +12,8 @@ use Getopt::Config::FromPod;
 use Pod::Usage;
 use YAML::Any;
 use Text::Template;
+use File::Temp;
+use File::Copy;
 
 my $yaml = YAML::Any->implementation;
 my $encoder = $yaml eq 'YAML::Syck' || $yaml eq 'YAML::Old' ? sub { shift; } : sub { Encode::encode('utf-8', shift); };
@@ -80,6 +82,34 @@ sub _make
 
 sub _install
 {
+	my $control_path = $conf->{template_path}.'/control.yaml';
+	if(! -f $control_path) {
+		die "$control_path not found";
+	}
+	my $control = YAML::Any::LoadFile($control_path) or die "Can't load $control_path";
+	$ENV{EDITOR} = 'vi';
+	foreach my $key (keys %{$control->{files}}) {
+		my $fh = File::Temp->new;
+		my $target = _expand($control->{files}{$key}{install});
+		my $temp = $fh->filename;
+		print "$target v.s. output\n";
+		my $ret = system "sdiff -d -o '$temp' '$target' '$conf->{template_path}/${key}.out'";
+		if($ret == 0) {
+			print +('-'x72)."\nIdentical, skip\n".('-'x72)."\n";
+		} elsif($ret == (1 << 8)) {
+			print +('-'x72)."\nActual diff\n".('-'x72)."\n";
+			system "diff -u '$target' '$temp'";
+			print 'y/n> ';
+			my $yn = <STDIN>;
+			if($yn =~ /^\s*y\s*$/i) {
+				print "Installing $target\n";
+				rename $target => "${target}.bak" or warn "Backup failed, skip";
+				copy $temp => $target;
+			}
+		} else {
+			print +('-'x72)."\nError occurs, skip\n".('-'x72)."\n";
+		}
+	}
 }
 
 sub _init
