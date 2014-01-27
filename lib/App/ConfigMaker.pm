@@ -139,6 +139,32 @@ sub _init
 
 sub _check
 {
+	my $control_path = $conf->{template_path}.'/control.yaml';
+	if(! -f $control_path) {
+		die "$control_path not found";
+	}
+	my $control = YAML::Any::LoadFile($control_path) or die "Can't load $control_path";
+	my %var;
+	foreach my $key (keys %{$control->{files}}) {
+		local $/;
+		open my $fh, "<", "$conf->{template_path}/${key}.tmpl";
+		my $cont = <$fh>;
+		close $fh;
+		while($cont =~ /({%.*?%})/gs) {
+			my $frag = $1;
+			while($frag =~ /\$(?:(\w+)|{([^}]+)})\b/g) {
+				$var{$1||$2} = 1;
+			}
+		}
+	}
+	foreach my $var (keys %var) {
+		next if $var =~ /^(?:OUT|_.*)$/;
+		warn "Variable: $var in templates not in $conf->{template_path}/control.yaml" unless exists $control->{variables}{$var};
+		warn "Variable: $var in templates not in $CONF_PATH" unless exists $conf->{$var};
+	}
+	foreach my $var (keys %{$control->{variables}}) {
+		warn "Variable: $var in $conf->{template_path}/control.yaml not in $CONF_PATH" unless exists $conf->{$var};
+	}
 }
 
 sub run
