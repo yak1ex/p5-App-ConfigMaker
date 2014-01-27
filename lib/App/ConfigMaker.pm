@@ -62,6 +62,8 @@ sub _expand
 }
 
 # TODO: encoding/bom handling
+# TODO: errors in code fragments MUST be notified
+# TODO: it may be better to notify new variables also in YAML comment
 sub _make
 {
 	my $control_path = $conf->{template_path}.'/control.yaml';
@@ -96,6 +98,10 @@ sub _init
 	}
 	my $control = YAML::Any::LoadFile($control_path) or die "Can't load $control_path";
 	foreach my $key (keys %{$control->{variables}}) {
+		next if exists $conf->{$key};
+		if(exists $opts{u}) {
+			print "Add new variable: $key\n";
+		}
 		$conf->{$key} = $control->{variables}{$key}{example};
 	}
 	YAML::Any::DumpFile($CONF_PATH, $conf);

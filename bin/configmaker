@@ -52,3 +52,9 @@ Templates are handled by L<Text::Template>.
 Show brief instruction.
 
 =for getopt 'h'
+
+=option C<-u>
+
+Update an existing file in init command.
+
+=for getopt 'u'
