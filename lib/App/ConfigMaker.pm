@@ -64,7 +64,6 @@ sub _expand
 }
 
 # TODO: encoding/bom handling
-# TODO: errors in code fragments MUST be notified
 # TODO: it may be better to notify new variables also in YAML comment
 sub _make
 {
@@ -74,9 +73,27 @@ sub _make
 	}
 	my $control = YAML::Any::LoadFile($control_path) or die "Can't load $control_path";
 	my %arg = %$conf;
+	my $error;
+	my @arg = (
+		DELIMITERS => ['{%', '%}'],
+		HASH => \%arg,
+		BROKEN => sub {
+			my %arg = @_;
+			$error = "Program fragment delivered error ``$arg{error} at template line $arg{lineno}''";
+			return;
+		},
+	);
+	$arg{include} = sub { Text::Template::fill_in_file($conf->{template_dir}.'/'.shift, @arg);  };
 	foreach my $key (keys %{$control->{files}}) {
+		undef $error;
+		my $result = Text::Template::fill_in_file("$conf->{template_dir}/${key}.tmpl", @arg);
+		if(defined $error) {
+			print STDERR "$error\n";
+			next;
+		}
+
 		open my $fh, '>', "$conf->{template_dir}/${key}.out";
-		print $fh Text::Template::fill_in_file("$conf->{template_dir}/${key}.tmpl", DELIMITERS => ['{%', '%}'], HASH => $conf);
+		print $fh $result;
 		close $fh;
 	}
 }
