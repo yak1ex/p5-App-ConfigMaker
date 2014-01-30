@@ -62,13 +62,20 @@ sub _expand
 	return $value;
 }
 
-sub _make
+sub _get_control
 {
+	die "template_dir is not defined in $CONF_PATH" unless exists $conf->{template_dir};
+	die "template_dir defined in $CONF_PATH is not a directory" unless -d $conf->{template_dir};
 	my $control_path = $conf->{template_dir}.'/control.yaml';
 	if(! -f $control_path) {
 		die "$control_path not found";
 	}
-	my $control = YAML::Any::LoadFile($control_path) or die "Can't load $control_path";
+	return YAML::Any::LoadFile($control_path) or die "Can't load $control_path";
+}
+
+sub _make
+{
+	my $control = _get_control();
 	my %arg = %$conf;
 	my $error;
 	my @arg = (
@@ -97,11 +104,7 @@ sub _make
 
 sub _install
 {
-	my $control_path = $conf->{template_dir}.'/control.yaml';
-	if(! -f $control_path) {
-		die "$control_path not found";
-	}
-	my $control = YAML::Any::LoadFile($control_path) or die "Can't load $control_path";
+	my $control = _get_control();
 	$ENV{EDITOR} = 'vi';
 	foreach my $key (keys %{$control->{files}}) {
 		my $fh = File::Temp->new;
@@ -154,11 +157,7 @@ sub _init
 
 sub _check
 {
-	my $control_path = $conf->{template_dir}.'/control.yaml';
-	if(! -f $control_path) {
-		die "$control_path not found";
-	}
-	my $control = YAML::Any::LoadFile($control_path) or die "Can't load $control_path";
+	my $control = _get_control();
 	my %var;
 	foreach my $key (keys %{$control->{files}}) {
 		local $/;
