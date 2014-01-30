@@ -147,7 +147,7 @@ sub _init
 		if(exists $opts{u}) {
 			print "Add new variable: $key\n";
 		}
-		$conf->{$key} = $control->{variables}{$key}{example};
+		$conf->{$key} = '{ EXAMPLE }'.$control->{variables}{$key}{example};
 	}
 	YAML::Any::DumpFile($CONF_PATH, $conf);
 }
