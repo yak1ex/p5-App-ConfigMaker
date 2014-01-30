@@ -55,7 +55,6 @@ sub _resolve_conf
 	}
 }
 
-# TODO: add tests
 sub _expand
 {
 	my $value = shift;
@@ -63,8 +62,6 @@ sub _expand
 	return $value;
 }
 
-# TODO: encoding/bom handling
-# TODO: it may be better to notify new variables also in YAML comment
 sub _make
 {
 	my $control_path = $conf->{template_dir}.'/control.yaml';
