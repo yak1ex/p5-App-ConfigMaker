@@ -194,7 +194,7 @@ sub run
 	my $command = shift @ARGV;
 	pod2usage(-msg => "Unkown command: $command", -verbose => 1, -exitval => 1) unless exists $dispatch{$command};
 	if($command ne 'init') {
-		$conf = YAML::Any::LoadFile($CONF_PATH) or die "$CONF_PATH not found}";
+		$conf = YAML::Any::LoadFile($CONF_PATH) or die "$CONF_PATH not found";
 		_resolve_conf();
 	}
 	$dispatch{$command}->(@ARGV);
