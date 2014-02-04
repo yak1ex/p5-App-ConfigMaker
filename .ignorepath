@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ignoredpath>
+  <ignoredpathentry path=".build" />
+  <ignoredpathentry path="App-ConfigMaker-*" />
+</ignoredpath>
+
