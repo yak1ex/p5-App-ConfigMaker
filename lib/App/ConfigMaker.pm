@@ -133,7 +133,7 @@ sub _install
 sub _init
 {
 	$conf = {};
-	if(-f "$ENV{HOME}/.config.yaml") {
+	if(-f $CONF_PATH) {
 		if(! exists $opts{u}) {
 			die "$CONF_PATH has already existed, specify -u if you actually want to update it";
 		}

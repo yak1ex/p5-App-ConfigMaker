@@ -1,4 +1,4 @@
-use Test::More tests => 6;
+use Test::More tests => 7;
 use Test::Exception;
 
 use FindBin;
@@ -22,3 +22,5 @@ throws_ok { App::ConfigMaker->run('make'); } qr/control.yaml not found/, 'config
 
 App::ConfigMaker::__set_conf("$FindBin::Bin/invalid.yaml");
 throws_ok { App::ConfigMaker->run('make'); } qr/YAML/, 'config.yaml having template_dir with invalid control.yaml other than init';
+
+throws_ok { App::ConfigMaker->run('init'); } qr/has already existed, specify -u if you actually want to update it/, 'config.yaml already existed';
