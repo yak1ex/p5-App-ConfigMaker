@@ -140,11 +140,7 @@ sub _init
 		$conf = YAML::Any::LoadFile($CONF_PATH);
 	}
 	$conf->{template_dir} ||= "$ENV{HOME}/.conf";
-	my $control_path = $conf->{template_dir}.'/control.yaml';
-	if(! -f $control_path) {
-		die "$control_path not found";
-	}
-	my $control = YAML::Any::LoadFile($control_path) or die "Can't load $control_path";
+	my $control = _get_control();
 	foreach my $key (keys %{$control->{variables}}) {
 		next if exists $conf->{$key};
 		if(exists $opts{u}) {
