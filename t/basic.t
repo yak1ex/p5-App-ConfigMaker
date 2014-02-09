@@ -1,7 +1,9 @@
-use Test::More tests => 10;
+use Test::More tests => 12;
 use Test::Exception;
 
 use FindBin;
+use File::Temp;
+use File::Copy::Recursive qw(dircopy);
 use Getopt::Config::FromPod;
 Getopt::Config::FromPod->set_class_default(-file => 'bin/configmaker');
 
@@ -34,3 +36,17 @@ throws_ok { App::ConfigMaker->run(qw(init -u)); } qr/control.yaml not found/, 'c
 
 App::ConfigMaker::__set_conf("$FindBin::Bin/invalid.yaml");
 throws_ok { App::ConfigMaker->run(qw(init -u)); } qr/YAML/, 'config.yaml having template_dir with invalid control.yaml on init';
+
+my $dir1 = File::Temp->newdir();
+dircopy("$FindBin::Bin/tmpl", "$dir1/tmpl");
+App::ConfigMaker::__set_conf("$dir1/conf.yaml");
+lives_ok { App::ConfigMaker->run('init', "$dir1/tmpl"); } 'invoke init command';
+
+my $content;
+{
+	local $/;
+	open my $fh, '<', "$dir1/conf.yaml";
+	$content = <$fh>;
+	close $fh;
+}
+like($content, qr[---\ntemplate_dir: .*/tmpl\nvar: '{ EXAMPLE }example value'\n], 'content by init command');

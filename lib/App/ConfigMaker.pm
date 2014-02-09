@@ -144,11 +144,12 @@ sub _init
 		}
 		$conf = YAML::Any::LoadFile($CONF_PATH);
 	}
+	$conf->{template_dir} = File::Spec->rel2abs($_[0]) if defined $_[0];
 	$conf->{template_dir} ||= "$ENV{HOME}/.conf";
 	my $control = _get_control();
 	foreach my $key (keys %{$control->{variables}}) {
 		next if exists $conf->{$key};
-		if(exists $opts{u}) {
+		if(defined $update) {
 			print "Add new variable: $key\n";
 		}
 		$conf->{$key} = '{ EXAMPLE }'.$control->{variables}{$key}{example};
