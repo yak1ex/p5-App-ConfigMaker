@@ -34,6 +34,9 @@ configmaker [install | make | check | init]
   # make initial $ENV{HOME}/.config.yaml from $ENV{HOME}/{template_dir}/control.yaml
   configmaker init
 
+  # make initial $ENV{HOME}/.config.yaml from the existing some/where/control.yaml
+  configmaker init -u some/where
+
 =head1 DESCRIPTION
 
 It is NOT intended that this tiny script is released to CPAN. Just for a personal use.
@@ -52,9 +55,3 @@ Templates are handled by L<Text::Template>.
 Show brief instruction.
 
 =for getopt 'h'
-
-=option C<-u>
-
-Update an existing file in init command.
-
-=for getopt 'u'

@@ -132,9 +132,14 @@ sub _install
 
 sub _init
 {
+	my $update;
+	if(defined $_[0] && $_[0] eq '-u') {
+		$update = 1;
+		shift;
+	}
 	$conf = {};
 	if(-f $CONF_PATH) {
-		if(! exists $opts{u}) {
+		if(! defined $update) {
 			die "$CONF_PATH has already existed, specify -u if you actually want to update it";
 		}
 		$conf = YAML::Any::LoadFile($CONF_PATH);

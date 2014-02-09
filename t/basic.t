@@ -27,10 +27,10 @@ throws_ok { App::ConfigMaker->run('make'); } qr/YAML/, 'config.yaml having templ
 throws_ok { App::ConfigMaker->run('init'); } qr/has already existed, specify -u if you actually want to update it/, 'config.yaml already existed on init';
 
 App::ConfigMaker::__set_conf("$FindBin::Bin/nodir.yaml");
-throws_ok { App::ConfigMaker->run(qw(-u init)); } qr/template_dir defined in .* is not a directory/, 'config.yaml having not directory template_dir on init';
+throws_ok { App::ConfigMaker->run(qw(init -u)); } qr/template_dir defined in .* is not a directory/, 'config.yaml having not directory template_dir on init';
 
 App::ConfigMaker::__set_conf("$FindBin::Bin/nocontrol.yaml");
-throws_ok { App::ConfigMaker->run(qw(-u init)); } qr/control.yaml not found/, 'config.yaml having template_dir without control.yaml on init';
+throws_ok { App::ConfigMaker->run(qw(init -u)); } qr/control.yaml not found/, 'config.yaml having template_dir without control.yaml on init';
 
 App::ConfigMaker::__set_conf("$FindBin::Bin/invalid.yaml");
-throws_ok { App::ConfigMaker->run(qw(-u init)); } qr/YAML/, 'config.yaml having template_dir with invalid control.yaml on init';
+throws_ok { App::ConfigMaker->run(qw(init -u)); } qr/YAML/, 'config.yaml having template_dir with invalid control.yaml on init';
