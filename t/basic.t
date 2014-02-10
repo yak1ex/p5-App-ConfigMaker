@@ -1,4 +1,4 @@
-use Test::More tests => 12;
+use Test::More tests => 15;
 use Test::Exception;
 
 use FindBin;
@@ -37,16 +37,26 @@ throws_ok { App::ConfigMaker->run(qw(init -u)); } qr/control.yaml not found/, 'c
 App::ConfigMaker::__set_conf("$FindBin::Bin/invalid.yaml");
 throws_ok { App::ConfigMaker->run(qw(init -u)); } qr/YAML/, 'config.yaml having template_dir with invalid control.yaml on init';
 
+sub content
+{
+	my $file = shift;
+	local $/;
+	open my $fh, '<', $file;
+	my $content = <$fh>;
+	close $fh;
+	return $content;
+}
+
 my $dir1 = File::Temp->newdir();
 dircopy("$FindBin::Bin/tmpl", "$dir1/tmpl");
 App::ConfigMaker::__set_conf("$dir1/conf.yaml");
+# TODO: warnings are issued by '{ EXAMPLE }'
 lives_ok { App::ConfigMaker->run('init', "$dir1/tmpl"); } 'invoke init command';
+like(content("$dir1/conf.yaml"), qr[---\ntemplate_dir: .*/tmpl\nvar: '{ EXAMPLE }example value'\n], 'config.yaml content by init command');
 
-my $content;
-{
-	local $/;
-	open my $fh, '<', "$dir1/conf.yaml";
-	$content = <$fh>;
-	close $fh;
-}
-like($content, qr[---\ntemplate_dir: .*/tmpl\nvar: '{ EXAMPLE }example value'\n], 'content by init command');
+lives_ok { App::ConfigMaker->run('make'); } 'invoke make command';
+ok(-f "$dir1/tmpl/test.ini.out");
+is(content("$dir1/tmpl/test.ini.out"), <<EOF, 'output by make command');
+[test]
+example value=example value
+EOF
