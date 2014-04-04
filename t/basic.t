@@ -1,9 +1,10 @@
-use Test::More tests => 12;
+use Test::More tests => 16;
 use Test::Exception;
 
 use FindBin;
 use File::Temp;
 use File::Copy::Recursive qw(dircopy);
+use Capture::Tiny qw(capture);
 use Getopt::Config::FromPod;
 Getopt::Config::FromPod->set_class_default(-file => 'bin/configmaker');
 
@@ -42,9 +43,15 @@ is(content("$dir1/tmpl/test.ini.out"), <<EOF, 'output by make command');
 example value=example value
 EOF
 
-# TODO: Suppress or check stdout
 # install when not yet existed
-lives_ok { App::ConfigMaker->run('install'); } 'invoke install command';
+my ($stdout, $stderr);
+lives_ok { ($stdout, $stderr) = capture { App::ConfigMaker->run('install'); }; } 'invoke install command';
+is($stdout, <<EOF, 'invoke install command - stdout');
+------------------------------------------------------------------------
+Destination not yet existed, just copy
+------------------------------------------------------------------------
+EOF
+is($stderr, '', 'invoke install command - stderr');
 ok(-f "$dir2/test.ini", 'exists output');
 is(content("$dir2/test.ini"), <<EOF, 'output by install command');
 [test]
@@ -52,7 +59,16 @@ example value=example value
 EOF
 
 # install when identical
-lives_ok { App::ConfigMaker->run('install'); } 'invoke install command again';
+lives_ok { ($stdout, $stderr) = capture { App::ConfigMaker->run('install'); }; } 'invoke install command again';
+is($stdout, <<EOF, 'invoke install command again - stdout');
+$dir2/test.ini v.s. output
+[test]\t\t\t\t\t\t\t\t[test]
+example value=example value\t\t\t\t\texample value=example value
+------------------------------------------------------------------------
+Identical, skip
+------------------------------------------------------------------------
+EOF
+is($stderr, '', 'invoke install command again - stderr');
 ok(-f "$dir2/test.ini", 'exists output');
 is(content("$dir2/test.ini"), <<EOF, 'output by install command');
 [test]
