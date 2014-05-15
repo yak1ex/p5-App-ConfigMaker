@@ -1,4 +1,4 @@
-use Test::More tests => 24;
+use Test::More tests => 27;
 use Test::Exception;
 
 use FindBin;
@@ -153,4 +153,23 @@ is(content("$dir2/test.ini"), <<EOF, 'output by install command');
 example2 value=example2 value
 EOF
 
-# TODO: check
+# Change config, again
+dircopy("$FindBin::Bin/tmpl2", "$dir1/tmpl2");
+{
+	open my $fh, '>', "$dir1/conf.yaml";
+	print $fh <<EOF;
+template_dir: $dir1/tmpl2
+test_dist: $dir2
+EOF
+	close $fh;
+}
+# check
+lives_ok { ($stdout, $stderr) = capture { App::ConfigMaker->run('check'); }; } 'invoke check command';
+is($stdout, '', 'invoke check command - stdout');
+$re = <<EOF; chop $re;
+\\AVariable: var in templates not in $dir1/conf.yaml at .*
+Variable: var in $dir1/tmpl2/control.yaml not in $dir1/conf.yaml at .*
+Variable: newvar in $dir1/tmpl2/control.yaml not in $dir1/conf.yaml at .*
+\\Z
+EOF
+like($stderr, qr/$re/, 'invoke check comand - stderr');
