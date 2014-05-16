@@ -1,4 +1,4 @@
-use Test::More tests => 27;
+use Test::More tests => 36;
 use Test::Exception;
 
 use FindBin;
@@ -163,7 +163,7 @@ test_dist: $dir2
 EOF
 	close $fh;
 }
-# check
+# check for normal variable
 lives_ok { ($stdout, $stderr) = capture { App::ConfigMaker->run('check'); }; } 'invoke check command';
 is($stdout, '', 'invoke check command - stdout');
 $re = <<EOF; chop $re;
@@ -173,3 +173,37 @@ Variable: newvar in $dir1/tmpl2/control.yaml not in $dir1/conf.yaml at .*
 \\Z
 EOF
 like($stderr, qr/$re/, 'invoke check comand - stderr');
+
+# Change config, yet again
+dircopy("$FindBin::Bin/env", "$dir1/env");
+{
+	open my $fh, '>', "$dir1/conf.yaml";
+	print $fh <<EOF;
+template_dir: $dir1/env
+var: '{VAR}'
+test_dist: $dir2
+EOF
+	close $fh;
+}
+# check for environmentl variable
+lives_ok { ($stdout, $stderr) = capture { App::ConfigMaker->run('check'); }; } 'invoke check command for env';
+is($stdout, '', 'invoke check command for env - stdout');
+$re = <<EOF; chop $re;
+\\AVariable: VAR in templates not defined in environment variables at .*
+\\Z
+EOF
+like($stderr, qr/$re/, 'invoke check comand for env - stderr');
+{
+	local $ENV{VAR} = 'example2 value';
+	lives_ok { ($stdout, $stderr) = capture { App::ConfigMaker->run('check'); }; } 'invoke check command for env again';
+	is($stdout, '', 'invoke check command for env again - stdout');
+	is($stderr, '', 'invoke check command for env again - stderr');
+
+	lives_ok { App::ConfigMaker->run('make'); } 'invoke make command for env';
+	ok(-f "$dir1/env/test.ini.out", 'exists output');
+	is(content("$dir1/env/test.ini.out"), <<EOF, 'output by make command');
+[test]
+example2 value=example2 value
+example2 value=example2 value
+EOF
+}

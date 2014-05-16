@@ -43,10 +43,10 @@ sub _resolve_one
 	my $flag;
 	while($conf->{$key} =~ /{([^}]*)}/g) {
 		$flag = 1;
-		_resolve_one($1);
+		_resolve_one($1) unless $1 =~ /^[A-Z]/;
 	}
 	if($flag) {
-		$conf->{$key} =~ s/{([^}]*)}/$conf->{$1}/ge;
+		$conf->{$key} =~ s/{([^}]*)}/$conf->{$1} || $ENV{$1} || ''/ge;
 	}
 }
 
@@ -78,7 +78,7 @@ sub _get_control
 sub _make
 {
 	my $control = _get_control();
-	my %arg = %$conf;
+	my %arg = (%ENV, %$conf);
 	my $error;
 	my @arg = (
 		DELIMITERS => ['{%', '%}'],
@@ -184,8 +184,12 @@ sub _check
 	}
 	foreach my $var (keys %var) {
 		next if $var =~ /^(?:OUT|_.*)$/;
-		warn "Variable: $var in templates not in $conf->{template_dir}/control.yaml" unless exists $control->{variables}{$var};
-		warn "Variable: $var in templates not in $CONF_PATH" unless exists $conf->{$var};
+		if($var =~ /^[A-Z]/) {
+			warn "Variable: $var in templates not defined in environment variables" unless exists $ENV{$var};
+		} else {
+			warn "Variable: $var in templates not in $conf->{template_dir}/control.yaml" unless exists $control->{variables}{$var};
+			warn "Variable: $var in templates not in $CONF_PATH" unless exists $conf->{$var};
+		}
 	}
 	foreach my $var (keys %{$control->{variables}}) {
 		warn "Variable: $var in $conf->{template_dir}/control.yaml not in $CONF_PATH" unless exists $conf->{$var};

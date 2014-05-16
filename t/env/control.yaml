@@ -1,0 +1,7 @@
+variables:
+  var:
+    description: description
+    example: example value
+files:
+  test.ini:
+    install: '{test_dist}/test.ini'
