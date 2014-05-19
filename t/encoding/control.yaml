@@ -32,3 +32,13 @@ files:
     install: '{test_dist}/test.euclf.ini'
     encoding: euc_jp
     linebreak: LF
+  test.invalid_encoding.ini:
+    install: '{test_dist}/test.utf8.invalid_encoding.ini'
+    encoding: NONEXISTENT
+  test.invalid_encoding_for_bom.ini:
+    install: '{test_dist}/test.utf8.invalid_encoding_for_bom.ini'
+    encoding: Shift_JIS
+    bom: 1
+  test.invalid_linebreak.ini:
+    install: '{test_dist}/test.utf8.invalid_linebreak.ini'
+    linebreak: NONEXISTENT
