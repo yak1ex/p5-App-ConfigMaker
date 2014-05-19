@@ -1,0 +1,33 @@
+variables:
+  var:
+    description: description
+    example: example value
+files:
+  test.utf8.ini:
+    install: '{test_dist}/test.utf8.ini'
+    encoding: UTF-8
+  test.utf8bom.ini:
+    install: '{test_dist}/test.utf8bom.ini'
+    encoding: UTF-8
+    bom: 1
+  test.utf16le.ini:
+    install: '{test_dist}/test.utf16le.ini'
+    encoding: UTF-16LE
+  test.utf16lebom.ini:
+    install: '{test_dist}/test.ini'
+    encoding: UTF-16LE
+    bom: 1
+  test.utf16be.ini:
+    install: '{test_dist}/test.utf16le.ini'
+    encoding: UTF-16BE
+  test.utf16bebom.ini:
+    install: '{test_dist}/test.ini'
+    encoding: UTF-16BE
+    bom: 1
+  test.sjis.ini:
+    install: '{test_dist}/test.ini'
+    encoding: Shift_JIS
+  test.euclf.ini:
+    install: '{test_dist}/test.ini'
+    encoding: euc_jp
+    linebreak: LF
