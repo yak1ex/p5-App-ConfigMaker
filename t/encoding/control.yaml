@@ -32,6 +32,10 @@ files:
     install: '{test_dist}/test.euclf.ini'
     encoding: euc_jp
     linebreak: LF
+  test.crlfthrough.ini:
+    install: '{test_dist}/test.crlfthrough.ini'
+  test.crthrough.ini:
+    install: '{test_dist}/test.crthrough.ini'
   test.invalid_encoding.ini:
     install: '{test_dist}/test.utf8.invalid_encoding.ini'
     encoding: NONEXISTENT

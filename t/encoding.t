@@ -14,7 +14,7 @@ our @warn = (
 	qr/^Unknown encoding: NONEXISTENT at /m,
 	qr/^Unknown linebreak type: NONEXISTENT at /m,
 );
-our @key = qw(utf8 utf8bom utf16le utf16lebom utf16be utf16bebom sjiscrlf euclf);
+our @key = qw(utf8 utf8bom utf16le utf16lebom utf16be utf16bebom sjiscrlf euclf crthrough crlfthrough);
 plan tests => 2 + 1 + @warn + 2 * @key;
 use_ok('App::ConfigMaker');
 }
