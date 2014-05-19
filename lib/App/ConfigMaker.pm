@@ -16,6 +16,7 @@ use File::Temp;
 use File::Copy;
 use File::Path;
 use File::Basename;
+use Encode;
 
 my $yaml = YAML::Any->implementation;
 my $encoder = $yaml eq 'YAML::Syck' || $yaml eq 'YAML::Old' ? sub { shift; } : sub { Encode::encode('utf-8', shift); };
@@ -98,6 +99,32 @@ sub _make
 			next;
 		}
 
+		my ($encoding, $bom, $linebreak) = @{$control->{files}{$key}}{qw(encoding bom linebreak)};
+		if($encoding) {
+			if(Encode::find_encoding($encoding)) {
+				$result = Encode::encode($encoding, Encode::decode('utf-8', $result));
+			} else { warn "Unknown encoding: $encoding"; }
+		}
+		if($bom) {
+			if($encoding =~ /^utf.*8$/i) { $result = "\xef\xbb\xbf" . $result; }
+			elsif($encoding =~ /^utf.*16be$/i) { $result = "\xfe\xff" . $result; }
+			elsif($encoding =~ /^utf.*16(le)?$/i) { $result = "\xff\xfe" . $result; }
+			else { warn "Unknwon encoding for BOM: $encoding"; }
+		}
+		if($linebreak) {
+			if($linebreak =~ /^LF$/i) {
+				$result =~ s/\r\n/\n/g;
+				$result =~ s/\r/\n/g;
+			} elsif($linebreak =~ /^CRLF$/i) {
+				$result =~ s/\r\n/\n/g;
+				$result =~ s/\r|\n/\r\n/g;
+			} elsif($linebreak =~ /^CR$/i) {
+				$result =~ s/\r\n/\r/g;
+				$result =~ s/\n/\r/g;
+			} else {
+				warn "Unknown linebreak type: $linebreak";
+			}
+		}
 		open my $fh, '>', "$conf->{template_dir}/${key}.out";
 		print $fh $result;
 		close $fh;
