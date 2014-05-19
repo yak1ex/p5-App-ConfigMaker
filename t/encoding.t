@@ -8,7 +8,7 @@ use Getopt::Config::FromPod;
 Getopt::Config::FromPod->set_class_default(-file => 'bin/configmaker');
 
 BEGIN {
-our @key = qw(utf8 utf8bom utf16le utf16lebom utf16be utf16bebom sjis euclf);
+our @key = qw(utf8 utf8bom utf16le utf16lebom utf16be utf16bebom sjiscrlf euclf);
 plan tests => 2 + 2 * @key;
 use_ok('App::ConfigMaker');
 }
@@ -42,7 +42,7 @@ EOF
 	close $fh;
 }
 lives_ok { App::ConfigMaker->run('make'); } 'invoke make command';
-for my $type (qw(utf8 utf8bom utf16le utf16lebom utf16be utf16bebom sjis euclf)) {
+for my $type (@key) {
 	ok(-f "$dir1/encoding/test.$type.ini.out", "exists output for $type");
 	is(content("$dir1/encoding/test.$type.ini.out"), content("$FindBin::Bin/encoding_result/test.$type.ini.out"), "output for $type by make command");
 }

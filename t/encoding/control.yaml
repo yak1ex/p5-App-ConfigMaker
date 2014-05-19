@@ -14,20 +14,21 @@ files:
     install: '{test_dist}/test.utf16le.ini'
     encoding: UTF-16LE
   test.utf16lebom.ini:
-    install: '{test_dist}/test.ini'
+    install: '{test_dist}/test.utf16lebom.ini'
     encoding: UTF-16LE
     bom: 1
   test.utf16be.ini:
-    install: '{test_dist}/test.utf16le.ini'
+    install: '{test_dist}/test.utf16be.ini'
     encoding: UTF-16BE
   test.utf16bebom.ini:
-    install: '{test_dist}/test.ini'
+    install: '{test_dist}/test.utf16bebom.ini'
     encoding: UTF-16BE
     bom: 1
-  test.sjis.ini:
-    install: '{test_dist}/test.ini'
+  test.sjiscrlf.ini:
+    install: '{test_dist}/test.sjiscrlf.ini'
     encoding: Shift_JIS
+    linebreak: CRLF
   test.euclf.ini:
-    install: '{test_dist}/test.ini'
+    install: '{test_dist}/test.euclf.ini'
     encoding: euc_jp
     linebreak: LF
